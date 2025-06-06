@@ -194,7 +194,7 @@ typedef enum {
     TOKEN_REGISTER,
 } TokenType;
 
-typedef struct {
+typedef union{
     TokenKeyword       Keyword;
     TokenLiteral       Literal;
     TokenOperand       Operand;
