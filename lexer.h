@@ -1,0 +1,219 @@
+#define LEXER_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h> 
+#include <ctype.h>
+
+const unsigned char Modulus = 37;
+
+
+typedef enum{
+    REGISTER_GENERAL_1,
+    REGISTER_GENERAL_2,
+    REGISTER_GENERAL_3,
+    REGISTER_GENERAL_4,
+    REGISTER_GENERAL_5,
+    REGISTER_GENERAL_6,
+    REGISTER_GENERAL_7,
+    REGISTER_GENERAL_8,
+    REGISTER_GENERAL_9,
+    REGISTER_GENERAL_10,
+    REGISTER_GENERAL_11,
+    REGISTER_GENERAL_12,
+    REGISTER_GENERAL_13,
+    REGISTER_GENERAL_14,
+    REGISTER_GENERAL_15,
+    REGISTER_GENERAL_16,
+    REGISTER_GENERAL_17,
+    REGISTER_GENERAL_18,
+    REGISTER_GENERAL_19,
+    REGISTER_GENERAL_20,
+    REGISTER_GENERAL_21,
+    REGISTER_GENERAL_22,
+    REGISTER_GENERAL_23,
+    REGISTER_GENERAL_24,
+    REGISTER_GENERAL_25,
+    REGISTER_GENERAL_26,
+    REGISTER_GENERAL_27,
+    REGISTER_GENERAL_28,
+    REGISTER_GENERAL_29,
+    REGISTER_GENERAL_30,
+    REGISTER_GENERAL_31,
+    REGISTER_GENERAL_32,
+    REGISTER_STACK_POINTER,
+    REGISTER_PROGRAM_COUNTER,
+    REGISTER_STATUS_REGISTER,
+    REGISTER_LINK_REGISTER,
+    REGISTER_FRAME_POINTER,
+    REGISTER_FLOATING_POINT_REGISTER,
+    REGISTER_VECTOR_REGISTER,
+    REGISTER_CONTROL_REGISTER,
+    REGISTER_SEGMENT_REGISTER,
+    REGISTER_SPECIAL_PURPOSE_REGISTER,
+}TypeRegister;
+
+typedef enum{
+    ARCHITECTURE_X86_32,
+    ARCHITECTURE_X86_64,
+    ARCHITECTURE_ARM_THUMB,
+    ARCHITECTURE_ARM_THUMB_2,
+    ARCHITECTURE_ARM_CORTEX_M,
+    ARCHITECTURE_RISC_V_32,
+    ARCHITECTURE_RISC_V_64,
+    ARCHITECTURE_AVR_8,
+    ARCHITECTURE_MSP430_16,
+    ARCHITECTURE_PIC16_8,
+    ARCHITECTURE_PIC18_8,
+    ARCHITECTURE_PIC24_16,
+    ARCHITECTURE_DSPIC_16,
+    ARCHITECTURE_PIC32_32,
+    ARCHITECTURE_MIPS_32,
+    ARCHITECTURE_MIPS_64,
+    ARCHITECTURE_POWERPC_32,
+    ARCHITECTURE_POWERPC_64,
+    ARCHITECTURE_RENEXA_RX_64,
+    ARCHITECTURE_XTENSA,
+    ARCHITECTURE_8051_8,
+    ARCHITECTURE_SUPERH_32,
+} TypeArchitecture;
+
+
+typedef enum{
+    KEYWORD_FUNCTION_IF,
+    KEYWORD_SUBFUNCTION_GOTO,
+    KEYWORD_SUBFUNCTION_ELSE,
+    KEYWORD_FUNCTION_LABEL,
+    KEYWORD_FUNCTION_JUMP,
+    KEYWORD_FUNCTION_CONDITIONAL_JUMP,
+    KEYWORD_LIBRARY_FUNCTION_INCLUDE,
+    KEYWORD_LIBRARY_FUNCTION_IMPORT,
+    KEYWORD_ARCHITECTURE,
+} TypeKeyword;
+
+typedef enum{
+    DEBUG_TRAP,
+    DEBUG_HALT,
+    DEBUG_CAP,
+    DEBUG_SECTION,
+    DEBUG_ZONE,
+    DEBUG_GLOBAL,
+    DEBUG_FORCE,
+}TypeDebug;
+
+
+typedef enum{
+    LITERAL_VALUE_INT8,
+    LITERAL_VALUE_INT16,
+    LITERAL_VALUE_INT32,
+    LITERAL_VALUE_INT64,
+    LITERAL_VALUE_FLOAT8,
+    LITERAL_VALUE_FLOAT16,
+    LITERAL_VALUE_FLOAT32,
+    LITERAL_VALUE_FLOAT64,
+    LITERAL_VALUE_LOGIC_UNSIGNED,
+} TypeLiteral;
+
+typedef enum{
+    SEPARATOR_SEMI_COLON,
+    SEPARATOR_OPEN_PAREN,
+    SEPARATOR_CLOSE_PAREN,
+    SEPARATOR_OPEN_BRACKET,
+    SEPARATOR_CLOSE_BRACKET,
+} TypeSeparator;
+
+typedef enum{
+    OPERAND_LOGICAL_NOT,
+    OPERAND_LOGICAL_EXCLUSIVE_OR,
+    OPERAND_LOGICAL_OR,
+    OPERAND_LOGICAL_AND,
+    OPERAND_LOGICAL_EQUAL_TO,
+    OPERAND_NUMERIC_LOGICAL_LESS_OR_EQUAL,
+    OPERAND_NUMERIC_LOGICAL_GREATER_OR_EQUAL,
+    OPERAND_NUMERIC_LOGICAL_NOT_EQUAL_TO,
+    OPERAND_NUMERIC_LOGICAL_LESS_THAN,
+    OPERAND_NUMERIC_LOGICAL_GREATER_THAN,
+    OPERAND_NUMERICAL_ADD,
+    OPERAND_NUMERICAL_SUBTRACT,
+    OPERAND_NUMERICAL_MODULUS,
+    OPERAND_NUMERICAL_DIVISION,
+    OPERAND_NUMERICAL_MULTIPLY,
+} TypeOperand;
+
+typedef struct 
+{
+    TypeArchitecture type;
+} TokenArchitecture;
+
+typedef struct 
+{
+    TypeRegister type;
+} TokenRegister;
+
+typedef struct
+{
+    TypeKeyword type;
+} TokenKeyword;
+
+typedef struct
+{
+    TypeLiteral type;
+    int value;
+} TokenLiteral;
+
+typedef struct
+{
+    TypeSeparator type;
+} TokenSeparator;
+
+typedef struct
+{
+    TypeOperand type;
+} TokenOperand;
+
+typedef struct
+{
+    const char name;
+
+} TokenIdentifier;
+
+typedef struct
+{
+    TypeDebug type;
+
+} TokenDebug;
+
+typedef enum {
+    TOKEN_KEYWORD,
+    TOKEN_LITERAL,
+    TOKEN_OPERAND,
+    TOKEN_SEPARATOR,
+    TOKEN_IDENTIFIER,
+    TOKEN_DEBUG,
+    TOKEN_ARCHITECTURE,
+    TOKEN_REGISTER,
+} TokenType;
+
+typedef struct {
+    TokenKeyword       Keyword;
+    TokenLiteral       Literal;
+    TokenOperand       Operand;
+    TokenSeparator     Separator;
+    TokenIdentifier    Identifier;
+    TokenDebug         Debug;
+    TokenArchitecture  Architecture;
+    TokenRegister      Register;
+} TokenValue;
+
+typedef struct {
+    TokenType type;  // What kind of token it is
+    TokenValue value;  // The value of the token (one of the types)
+} Token;
+
+typedef struct {
+    char character[100];  // Character to match
+    Token token;  // Associated token
+} LookupEntry;
+
+
+
