@@ -16,7 +16,7 @@ typedef enum{
 }SystemType;
 
 typedef enum{
-    REGISTER_GENERAL_1, // general purpose register
+    REGISTER_GENERAL_1, // general purpose register from 1 to 32
     REGISTER_GENERAL_2,
     REGISTER_GENERAL_3,
     REGISTER_GENERAL_4,
@@ -171,79 +171,170 @@ typedef enum{
                                               
                                               
 typedef enum{
-    KEYWORD_FUNCTION_IF, // Keyword
-    KEYWORD_SUBFUNCTION_GOTO, // like jump but for if condition and it more human readable than using condition and jump
-    KEYWORD_SUBFUNCTION_ELSE, // another sub function with other condition
-    KEYWORD_FUNCTION_LABEL,   // where it can jump to
-    KEYWORD_FUNCTION_JUMP,    // jump to a location blindly
-    KEYWORD_FUNCTION_CONDITIONAL_JUMP,  // jump to a location with a specific condition
-    KEYWORD_LIBRARY_FUNCTION_INCLUDE,   // add a compiler known library
-    KEYWORD_LIBRARY_FUNCTION_IMPORT,    // adda file with a path or location
-    KEYWORD_ARCHITECTURE,               // tell the compiler what it need to compiling to
+    // ---High-level keywords---
+    KEYWORD_STRUCT,                     // Defines a structure type and how it should be laid out in memory and how it storage should be allocated resembling struct concept in asm
+    KEYWORD_CLASS,                     // Defines a class type and how it should be laid out in memory and how it behave should be resembling class concept in asm
+    KEYWORD_DATA_TYPE,                 // Defines a data type and how it behave and work a kind of defined new type in asm
+
+    // --- Data Definition ---
+    KEYWORD_DATA_DEFINE,                // Defines and optionally allocates/initializes a named data location (e.g., 'data my_var = 10;', 'data my_array[10];')
+    KEYWORD_DATA_EXTERNAL_DECLARE,      // Declares a variable that is defined in another compilation unit (e.g., 'external data another_var;')
+    KEYWORD_SUB_DATA_AS,                //  refernce a name for compiler to know what is that name meaning and always going with the define keyword
+
+    // --- C-like Control Flow Structures ---
+    KEYWORD_CONTROL_IF,                 // Corresponds to C's 'if' statement logic
+    KEYWORD_CONTROL_ELSE,               // Corresponds to C's 'else' statement logic
+    KEYWORD_CONTROL_LABEL,              // Defines a jump target (e.g., 'my_label:')
+    KEYWORD_CONTROL_GOTO,               // Unconditional transfer of control to a label (e.g., 'goto my_label;')
+    KEYWORD_CONTROL_CONDITIONAL_JUMP,   // Represents jumping based on a condition (e.g., 'jump_if_equal my_label;')
+
+    // --- C-like Function Call/Return ---
+    KEYWORD_FUNCTION_CALL,              // Calls a function/subroutine (e.g., 'call my_func();')
+    KEYWORD_FUNCTION_RETURN,            // Returns from a function/subroutine (e.g., 'return;')
+
+    // --- Explicit Stack Operations (Fundamental for ASM-like logic) ---
+    KEYWORD_STACK_PUSH,                 // Push data onto the stack (e.g., 'push reg;')
+    KEYWORD_STACK_POP,                  // Pop data from the stack (e.g., 'pop reg;')
+
+    // --- External Code/Data Linkage Directives (General) ---
+    KEYWORD_EXTERNAL_INCLUDE,           // Include external code/data (like C's #include)
+    KEYWORD_EXTERNAL_IMPORT,            // Import symbols (functions, variables) from other modules (for linker resolution)
+
+    // --- Compiler/Target Directives ---
+    KEYWORD_DIRECTIVE_ARCHITECTURE,     // Specifies the target processor architecture for compilation
+
 } TypeKeyword;
 
-typedef enum{// Debug keyword
-    DEBUG_TRAP, // stop point
-    DEBUG_HALT, // stop all execution
-    DEBUG_CAP,  // capture a memory 
-    DEBUG_SECTION, // a pre-commited to the compiler that variable it only used by a pre-defined label can add a name for easier track
-    DEBUG_ZONE,    // the defined area where the varible in section is able to call and no calling across
-    DEBUG_GLOBAL,  // can be using freely dev choice but they will be respondsible for the risk
-    DEBUG_FORCE,   // a strictly used by some specific label
-}TypeDebug;                          
-                                          
-                                          
-typedef enum{                             
-    LITERAL_VALUE_UNSIGNED, // General Literal value            
-    LITERAL_VALUE_BOOL,                          
-}Literal_general;
+typedef enum{
+    // --- Execution Control Debug Keywords ---
+    DEBUG_TRAP,      // Inserts a software breakpoint, causing execution to halt for debugger intervention.
+    DEBUG_HALT,      // Terminates program execution unconditionally; often used for critical error states in debug builds.
+    DEBUG_CAP,       // Triggers a capture or dump of a specified memory region's contents at this point in execution.
 
-typedef enum{                             
-    LITERAL_VALUE_INT8, // 8bit and above exclusive value
-    LITERAL_VALUE_FLOAT8,
-    LITERAL_VALUE_CHARACTER8,                                                              
-}Literal_8bit;
-typedef enum{                             
-    LITERAL_VALUE_INT16, // 16bit and above exclusive value
-    LITERAL_VALUE_FLOAT16,                
-    LITERAL_VALUE_CHARACTER16,                                                       
-}Literal_16bit;
-typedef enum{                             
-    LITERAL_VALUE_INT32, // // 32bit and above exclusive value
-    LITERAL_VALUE_FLOAT32,                 
-    LITERAL_VALUE_CHARACTER32,                                       
-}Literal_32bit;
-typedef enum{                             
-    LITERAL_VALUE_INT64, // 64bit exclusive value
-    LITERAL_VALUE_FLOAT64,                 
-    LITERAL_VALUE_CHARACTER64,                         
-}Literal_64bit;
+    // --- Debug-Specific Memory & Scope Control Keywords ---
+    DEBUG_SECTION,   // A compiler directive defining a named memory region for debug-only variables, conceptually scoped to a code label or range.
+                     // The compiler ensures variables in this section are primarily associated with the defined region.
+
+    DEBUG_ZONE,      // Defines a specific code region (e.g., delimited by labels) within which variables declared in an associated DEBUG_SECTION are valid and accessible.
+                     // The compiler commits to enforcing that these variables cannot be accessed from code outside this zone, preventing accidental corruption common in raw assembly.
+
+    DEBUG_GLOBAL,    // Declares a debug variable or resource as globally accessible from any code label during debugging.
+                     // This allows deliberate bypass of stricter scoping, but the developer is responsible for potential side effects or conflicts.
+
+    DEBUG_FORCE,     // A highly granular access control keyword: a variable or resource marked with DEBUG_FORCE can ONLY be accessed (read/write)
+                     // when program execution is precisely at a specific, designated label, or within an extremely narrow code window around it.
+
+}TypeDebug;                                                                 
+                                          
+// --- General Literal Properties/Types ---
+typedef enum {
+    LITERAL_VALUE_UNSIGNED, // Property: indicates an unsigned numerical literal (e.g., '10U')
+    LITERAL_VALUE_BOOL,     // Boolean literal (e.g., 'true', 'false')
+    // No specific 'signed' literal, as numbers are implicitly signed unless 'UNSIGNED' property is applied
+} Literal_general;
+
+// --- Bit-Width Specific Literals ---
+typedef enum {
+    LITERAL_VALUE_INT8,         // 8-bit integer literal
+    LITERAL_VALUE_FLOAT8,       // 8-bit floating-point literal (if supported)
+    LITERAL_VALUE_CHARACTER8,   // 8-bit character literal (e.g., 'a')
+} Literal_8bit;
+
+typedef enum {
+    LITERAL_VALUE_INT16,        // 16-bit integer literal
+    LITERAL_VALUE_FLOAT16,      // 16-bit floating-point literal
+    LITERAL_VALUE_CHARACTER16,  // 16-bit character literal (e.g., wide characters)
+} Literal_16bit;
+
+typedef enum {
+    LITERAL_VALUE_INT32,        // 32-bit integer literal
+    LITERAL_VALUE_FLOAT32,      // 32-bit floating-point literal
+    LITERAL_VALUE_CHARACTER32,  // 32-bit character literal (e.g., Unicode code points)
+} Literal_32bit;
+
+typedef enum {
+    LITERAL_VALUE_INT64,        // 64-bit integer literal
+    LITERAL_VALUE_FLOAT64,      // 64-bit floating-point literal
+    LITERAL_VALUE_CHARACTER64,  // 64-bit character literal (less common, but possible for very wide chars)
+} Literal_64bit;
+
+// --- Additional Literal Types ---
+typedef enum {
+    LITERAL_VALUE_STRING,       // String literal (e.g., "Hello, World!", typically stored in data section)
+    LITERAL_VALUE_POINTER_NULL, // For a null pointer literal (e.g., 'NULL' or 'nullptr')
+    LITERAL_VALUE_ADDRESS,      // For raw numerical addresses if they are a distinct literal concept from integers
+} Literal_other;
                                           
 typedef enum{                             
-    SEPARATOR_SEMI_COLON,    // Some default separator                    
-    SEPARATOR_OPEN_PAREN,                       
-    SEPARATOR_CLOSE_PAREN,                       
-    SEPARATOR_OPEN_BRACKET,                      
-    SEPARATOR_CLOSE_BRACKET,                     
+    // --- Statement & Expression Delimiters ---
+    SEPARATOR_SEMI_COLON,    // ; (Statement terminator)
+    SEPARATOR_COMMA,         // , (Separates items in lists: e.g., function arguments, multiple declarations)
+
+    // --- Block & Grouping Delimiters ---
+    SEPARATOR_OPEN_PAREN,    // ( (Function calls, expressions, type casts, grouping)
+    SEPARATOR_CLOSE_PAREN,   // )
+    SEPARATOR_OPEN_BRACKET,  // [ (Array indexing, memory dereference with offset)
+    SEPARATOR_CLOSE_BRACKET, // ]
+    SEPARATOR_OPEN_BRACE,    // { (Code blocks for functions, if/else, struct/class bodies)
+    SEPARATOR_CLOSE_BRACE,   // }
+
+    // --- Label Delimiter ---
+    SEPARATOR_COLON,         // : (For defining labels: e.g., 'my_label:')
+
+    // --- Literal Delimiters ---
+    SEPARATOR_DOUBLE_QUOTE,  // " (Delimiter for string literals)
+    SEPARATOR_SINGLE_QUOTE,  // ' (Delimiter for character literals)
+
+    // --- Operators (as separators/punctuators for syntax) ---
+    SEPARATOR_ASSIGN,        // = (Assignment operator: e.g., 'var = value;')
+    SEPARATOR_ARROW,         // -> (Pointer member access for structs/classes: e.g., 'ptr->member')
+                    
 } TypeSeparator;                               
                                                
-typedef enum{                                  
-    OPERAND_LOGICAL_NOT,                         // Logical Operand 
-    OPERAND_LOGICAL_EXCLUSIVE_OR,                          
-    OPERAND_LOGICAL_OR,                          
-    OPERAND_LOGICAL_AND,                         
-    OPERAND_LOGICAL_EQUAL_TO,                    
-    OPERAND_NUMERIC_LOGICAL_LESS_OR_EQUAL,       // Numerical compare 
-    OPERAND_NUMERIC_LOGICAL_GREATER_OR_EQUAL,    
-    OPERAND_NUMERIC_LOGICAL_NOT_EQUAL_TO,        
-    OPERAND_NUMERIC_LOGICAL_LESS_THAN,           
-    OPERAND_NUMERIC_LOGICAL_GREATER_THAN,        
-    OPERAND_NUMERICAL_ADD,                       // Numerical calculation            
-    OPERAND_NUMERICAL_SUBTRACT,                  
-    OPERAND_NUMERICAL_MODULUS,                   
-    OPERAND_NUMERICAL_DIVISION,                  
-    OPERAND_NUMERICAL_MULTIPLY,                 
-} TypeOperand;                                  
+typedef enum {
+    // --- Unary Operators ---
+    OPERATOR_LOGICAL_NOT,           // ! (Logical NOT: typically acts on boolean results)
+    OPERATOR_BITWISE_NOT,           // ~ (Bitwise NOT/One's complement: inverts all bits)
+    OPERATOR_UNARY_POSITIVE,        // ++ (Forces operand to be positive: e.g., '++myVar' makes 'myVar = abs(myVar)')
+    OPERATOR_UNARY_NEGATIVE,        // -- (Forces operand to be negative: e.g., '--myVar' makes 'myVar = -abs(myVar)')
+
+    // --- Bitwise Operators ---
+    OPERATOR_BITWISE_EXCLUSIVE_OR,  // ^ (Bitwise XOR)
+    OPERATOR_BITWISE_OR,            // | (Bitwise OR)
+    OPERATOR_BITWISE_AND,           // & (Bitwise AND)
+    OPERATOR_SHIFT_LEFT,            // << (Bitwise Left Shift)
+    OPERATOR_SHIFT_RIGHT,           // >> (Bitwise Right Shift)
+
+    // --- Comparison Operators (Numerical & Logical Result) ---
+    OPERATOR_EQUAL_TO,              // ==
+    OPERATOR_NOT_EQUAL_TO,          // !=
+    OPERATOR_LESS_THAN,             // <
+    OPERATOR_GREATER_THAN,          // >
+    OPERATOR_LESS_OR_EQUAL,         // <=
+    OPERATOR_GREATER_OR_EQUAL,      // >=
+
+    // --- Arithmetic Operators ---
+    OPERATOR_ADD,                   // +
+    OPERATOR_SUBTRACT,              // -
+    OPERATOR_MODULUS,               // %
+    OPERATOR_DIVISION,              // /
+    OPERATOR_MULTIPLY,              // *
+
+    // --- Compound Assignment Operators (Your Custom Syntax) ---
+    OPERATOR_INCREMENT,             // =+ (Compound addition: e.g., 'var =+ value' means 'var = var + value')
+    OPERATOR_DECREMENT,             // =- (Compound subtraction: e.g., 'var =- value' means 'var = var - value')
+    OPERATOR_MULTIPLEMENT,          // =* (Compound multiplication: e.g., 'var =* value' means 'var = var * value')
+    OPERATOR_DIVIDEMENT,            // =/ (Compound division: e.g., 'var =/ value' means 'var = var / value')
+    OPERATOR_MODULUSMENT,           // =% (Compound modulus: e.g., 'var =% value' means 'var = var % value')
+
+    // --- Logical Short-Circuiting Operators ---
+    OPERATOR_LOGICAL_OR,            // || (Logical OR with short-circuiting)
+    OPERATOR_LOGICAL_AND,           // && (Logical AND with short-circuiting)
+
+    // --- Special Purpose Operators ---
+    OPERATOR_BITFIELD_ACCESS,       // $ (For accessing specific bits or fields within a register/memory operand)
+
+} TypeOperator;                             
              
 typedef struct                                  
 {                                               
@@ -266,6 +357,7 @@ typedef struct {
     Literal_16bit    type_16bit;
     Literal_32bit    type_32bit;
     Literal_64bit    type_64bit;
+    Literal_other    type_other; // Other types of literal
 } TypeLiteral; // Separate Literal to system
 
 typedef struct {
@@ -285,8 +377,8 @@ typedef struct
 
 typedef struct
 {
-    TypeOperand type;
-} TokenOperand;
+    TypeOperator type;
+} TokenOperator;
 
 typedef ValueType; // A general value type to hold in identifier
     union {
@@ -298,7 +390,6 @@ typedef ValueType; // A general value type to hold in identifier
 
 typedef struct{
     const int ID; // the identifier token ID
-    SystemType type; // the identifier value type it can hold
     ValueType val_type; // the value it hold
 } TokenIdentifier;
 
@@ -322,7 +413,7 @@ typedef enum {
 typedef union{
     TokenKeyword       Keyword;
     SystemToken        SystemToken;
-    TokenOperand       Operand;
+    TokenOperator       Operator;
     TokenSeparator     Separator;
     TokenIdentifier    Identifier;
     TokenDebug         Debug;
