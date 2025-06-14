@@ -176,10 +176,10 @@ typedef enum{
     // ---High-level keywords---
     KEYWORD_STRUCT,                     // Defines a structure type and how it should be laid out in memory and how it storage should be allocated resembling struct concept in asm
     KEYWORD_CLASS,                     // Defines a class type and how it should be laid out in memory and how it behave should be resembling class concept in asm
-    KEYWORD_DATA_TYPE,                 // Defines a data type and how it behave and work a kind of defined new type in asm
+    KEYWORD_DATA_DEFINE,               // Defines a data type and how it behave and work a kind of defined new type in asm
 
     // --- Data Definition ---
-    KEYWORD_DATA_DEFINE,                // Defines and optionally allocates/initializes a named data location (e.g., 'data my_var = 10;', 'data my_array[10];')
+    KEYWORD_DATA_TYPE,                  // Defines and optionally allocates/initializes a named data location (e.g., 'data my_var = 10;', 'data my_array[10];')
     KEYWORD_DATA_EXTERNAL_DECLARE,      // Declares a variable that is defined in another compilation unit (e.g., 'external data another_var;')
     KEYWORD_SUB_DATA_AS,                //  refernce a name for compiler to know what is that name meaning and always going with the define keyword
 
@@ -187,8 +187,9 @@ typedef enum{
     KEYWORD_CONTROL_IF,                 // Corresponds to C's 'if' statement logic
     KEYWORD_CONTROL_ELSE,               // Corresponds to C's 'else' statement logic
     KEYWORD_CONTROL_LABEL,              // Defines a jump target (e.g., 'my_label:')
-    KEYWORD_CONTROL_GOTO,               // Unconditional transfer of control to a label (e.g., 'goto my_label;')
-    KEYWORD_CONTROL_CONDITIONAL_JUMP,   // Represents jumping based on a condition (e.g., 'jump_if_equal my_label;')
+    KEYWORD_CONTROL_GOTO,               // Unconditional transfer of control to a label (e.g., 'goto my_label ;')
+    KEYWORD_CONTROL_CONDITIONAL_JUMP,   // Represents jumping based on a condition (e.g., 'jmpc ( a > 2 ) my_label ;')
+    KEYWORD_CONTROL_JUMP,               // Represents jumping no condition 
 
     // --- C-like Function Call/Return ---
     KEYWORD_FUNCTION_CALL,              // Calls a function/subroutine (e.g., 'call my_func();')
@@ -400,7 +401,7 @@ typedef struct
 typedef enum {
     TOKEN_KEYWORD,   // Token type                             
     TOKEN_SYSTEM,                             
-    TOKEN_OPERAND,                               
+    TOKEN_OPERATOR,                               
     TOKEN_SEPARATOR,                            
     TOKEN_IDENTIFIER,                            
     TOKEN_DEBUG,                                 
