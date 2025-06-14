@@ -7,6 +7,7 @@
 #include <stdbool.h>
 
 const unsigned char Modulus = 37;
+
 typedef enum{
     SYSTEM_8BIT, // System bit type
     SYSTEM_16BIT,
@@ -254,7 +255,7 @@ typedef struct {
 } Token;
 
 typedef struct {
-    char character[100];  // Character to match
+    const char character[100];  // Character to match
     Token token;  // Associated token
 } LookupEntry;
 

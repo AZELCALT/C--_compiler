@@ -100,6 +100,8 @@ LookupEntry keywordLookup[] = {
 
 
 
+
+
 Token get_normal_token(int column,int line,char character[100]){
     
     int i;
