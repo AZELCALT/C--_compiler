@@ -13,6 +13,7 @@ typedef enum{
     SYSTEM_16BIT,
     SYSTEM_32BIT,
     SYSTEM_64BIT,
+    SYSTEM_CUSTOM, // Custom system type
 }SystemType;
 
 typedef enum{
