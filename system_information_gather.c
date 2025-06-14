@@ -427,7 +427,7 @@ SystemToken get_default_system_token(char character[100]) {
             .allowed_64bit = false
         };
         break;
-    
+    // Handle the PowerPC 64-bit architecture case
     case ARCHITECTURE_POWERPC_64:
         SystemToken powerpc_64_token = {
             .System = SYSTEM_64BIT,
@@ -438,7 +438,7 @@ SystemToken get_default_system_token(char character[100]) {
             .allowed_64bit = true
         };
         break;
-    
+    // Handle the AVR 8-bit architecture case
     case ARCHITECTURE_8051_8:
         SystemToken _8051_8_token = {
             .System = SYSTEM_8BIT,
@@ -449,7 +449,185 @@ SystemToken get_default_system_token(char character[100]) {
             .allowed_64bit = false
         };
         break;
+    // Handle the PIC32MM 8-bit architecture case
+    case ARCHITECTURE_PIC32MM_8:
+        SystemToken pic32mm_8_token = {
+            .System = SYSTEM_8BIT,
+            .Literal = LITERAL_VALUE_UNSIGNED,
+            .allowed_8bit = true,
+            .allowed_16bit = false,
+            .allowed_32bit = false,
+            .allowed_64bit = false
+        };
+        break;
+    // Handle the PIC32MK 8-bit architecture case
+    case ARCHITECTURE_PIC32MK_8:
+        SystemToken pic32mk_8_token = {
+            .System = SYSTEM_8BIT,
+            .Literal = LITERAL_VALUE_UNSIGNED,
+            .allowed_8bit = true,
+            .allowed_16bit = false,
+            .allowed_32bit = false,
+            .allowed_64bit = false
+        };
+        break;
+    // Handle the PIC32MX 8-bit architecture case
+    case ARCHITECTURE_PIC32MX_8:
+        SystemToken pic32mx_8_token = {
+            .System = SYSTEM_8BIT,
+            .Literal = LITERAL_VALUE_UNSIGNED,
+            .allowed_8bit = true,
+            .allowed_16bit = false,
+            .allowed_32bit = false,
+            .allowed_64bit = false
+        };
+        break;
+    // Handle the PIC32MZ 8-bit architecture case
+    case ARCHITECTURE_PIC32MZ_8:
+        SystemToken pic32mz_8_token = {
+            .System = SYSTEM_8BIT,
+            .Literal = LITERAL_VALUE_UNSIGNED,
+            .allowed_8bit = true,
+            .allowed_16bit = false,
+            .allowed_32bit = false,
+            .allowed_64bit = false
+        };
+        break;
+    // Handle the PIC32MM 16-bit architecture case
+    case ARCHITECTURE_PIC32MM_16:
+        SystemToken pic32mm_16_token = {
+            .System = SYSTEM_16BIT,
+            .Literal = LITERAL_VALUE_UNSIGNED,
+            .allowed_8bit = true,
+            .allowed_16bit = true,
+            .allowed_32bit = false,
+            .allowed_64bit = false
+        };
+        break;
+    // Handle the PIC32MK 16-bit architecture case
+    case ARCHITECTURE_PIC32MK_16:
+        SystemToken pic32mk_16_token = {
+            .System = SYSTEM_16BIT,
+            .Literal = LITERAL_VALUE_UNSIGNED,
+            .allowed_8bit = true,
+            .allowed_16bit = true,
+            .allowed_32bit = false,
+            .allowed_64bit = false
+        };
+        break;
+    // Handle the PIC32MX 16-bit architecture case
+    case ARCHITECTURE_PIC32MX_16:
+        SystemToken pic32mx_16_token = {
+            .System = SYSTEM_16BIT,
+            .Literal = LITERAL_VALUE_UNSIGNED,
+            .allowed_8bit = true,
+            .allowed_16bit = true,
+            .allowed_32bit = false,
+            .allowed_64bit = false
+        };
+        break;
+    // Handle the PIC32MZ 16-bit architecture case
+    case ARCHITECTURE_PIC32MZ_16:
+        SystemToken pic32mz_16_token = {
+            .System = SYSTEM_16BIT,
+            .Literal = LITERAL_VALUE_UNSIGNED,
+            .allowed_8bit = true,
+            .allowed_16bit = true,
+            .allowed_32bit = false,
+            .allowed_64bit = false
+        };
+        break;
+    // Handle the PIC32MM 32-bit architecture case
+    case ARCHITECTURE_PIC32MM_32:
+        SystemToken pic32mm_32_token = {
+            .System = SYSTEM_32BIT,
+            .Literal = LITERAL_VALUE_UNSIGNED,
+            .allowed_8bit = true,
+            .allowed_16bit = true,
+            .allowed_32bit = true,
+            .allowed_64bit = false
+        };
+        break;
+    // Handle the PIC32MK 32-bit architecture case
+    case ARCHITECTURE_PIC32MK_32:
+        SystemToken pic32mk_32_token = {
+            .System = SYSTEM_32BIT,
+            .Literal = LITERAL_VALUE_UNSIGNED,
+            .allowed_8bit = true,
+            .allowed_16bit = true,
+            .allowed_32bit = true,
+            .allowed_64bit = false
+        };
+        break;
+    // Handle the PIC32MX 32-bit architecture case
+    case ARCHITECTURE_PIC32MX_32:
+        SystemToken pic32mx_32_token = {
+            .System = SYSTEM_32BIT,
+            .Literal = LITERAL_VALUE_UNSIGNED,
+            .allowed_8bit = true,
+            .allowed_16bit = true,
+            .allowed_32bit = true,
+            .allowed_64bit = false
+        };
+        break;
+    // Handle the PIC32MZ 32-bit architecture case
+    case ARCHITECTURE_PIC32MZ_32:
+        SystemToken pic32mz_32_token = {
+            .System = SYSTEM_32BIT,
+            .Literal = LITERAL_VALUE_UNSIGNED,
+            .allowed_8bit = true,
+            .allowed_16bit = true,
+            .allowed_32bit = true,
+            .allowed_64bit = false
+        };
+        break;
+    // Handle the PIC32MM 64-bit architecture case
+    case ARCHITECTURE_PIC32MM_64:
+        SystemToken pic32mm_64_token = {
+            .System = SYSTEM_64BIT,
+            .Literal = LITERAL_VALUE_UNSIGNED,
+            .allowed_8bit = true,
+            .allowed_16bit = true,
+            .allowed_32bit = true,
+            .allowed_64bit = true
+        };
+        break;
+    // Handle the PIC32MK 64-bit architecture case
+    case ARCHITECTURE_PIC32MK_64:
+        SystemToken pic32mk_64_token = {
+            .System = SYSTEM_64BIT,
+            .Literal = LITERAL_VALUE_UNSIGNED,
+            .allowed_8bit = true,
+            .allowed_16bit = true,
+            .allowed_32bit = true,
+            .allowed_64bit = true
+        };
+        break;
+    // Handle the PIC32MX 64-bit architecture case
+    case ARCHITECTURE_PIC32MX_64:
+        SystemToken pic32mx_64_token = {
+            .System = SYSTEM_64BIT,
+            .Literal = LITERAL_VALUE_UNSIGNED,
+            .allowed_8bit = true,
+            .allowed_16bit = true,
+            .allowed_32bit = true,
+            .allowed_64bit = true
+        };
+        break;
     
+    // Handle the PIC32MZ 64-bit architecture case
+    case ARCHITECTURE_PIC32MZ_64:
+        SystemToken pic32mz_64_token = {
+            .System = SYSTEM_64BIT,
+            .Literal = LITERAL_VALUE_UNSIGNED,
+            .allowed_8bit = true,
+            .allowed_16bit = true,
+            .allowed_32bit = true,
+            .allowed_64bit = true
+        };
+        break;
+
+    // Handle the custom architecture case
     default ARCHITECTURE_CUSTOM:
         SystemToken default_system_token = {
             .System = SYSTEM_CUSTOM,
@@ -461,10 +639,7 @@ SystemToken get_default_system_token(char character[100]) {
         };
         break;
     }
-
-
-
-    
+    // Return the default system token
     return default_system_token;
 }
 
