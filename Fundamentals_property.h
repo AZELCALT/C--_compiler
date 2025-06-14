@@ -282,10 +282,6 @@ typedef enum{
     // --- Label Delimiter ---
     SEPARATOR_COLON,         // : (For defining labels: e.g., 'my_label:')
 
-    // --- Literal Delimiters ---
-    SEPARATOR_DOUBLE_QUOTE,  // " (Delimiter for string literals)
-    SEPARATOR_SINGLE_QUOTE,  // ' (Delimiter for character literals)
-
     // --- Operators (as separators/punctuators for syntax) ---
     SEPARATOR_ASSIGN,        // = (Assignment operator: e.g., 'var = value;')
     SEPARATOR_ARROW,         // -> (Pointer member access for structs/classes: e.g., 'ptr->member')
