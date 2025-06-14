@@ -291,6 +291,9 @@ typedef enum{
 } TypeSeparator;                               
                                                
 typedef enum {
+    // --- Assignment Operators ---
+    OPERATOR_ASSIGNMENT,            // = (Assignment operator: e.g., 'var = value;')
+    
     // --- Unary Operators ---
     OPERATOR_LOGICAL_NOT,           // ! (Logical NOT: typically acts on boolean results)
     OPERATOR_BITWISE_NOT,           // ~ (Bitwise NOT/One's complement: inverts all bits)
@@ -433,5 +436,4 @@ typedef struct {
 } LookupEntry;
 
 int identifier_counter;
-
-
+char Modulusment = '=' + '%'; // Modulusment character
