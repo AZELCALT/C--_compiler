@@ -1,4 +1,6 @@
-
+#ifdef fix_negative_zero
+    if (mant == 0) sign = 0;
+#endif
 
 typedef union __attribute__((packed))
 {
@@ -98,10 +100,29 @@ static int decimal_overflow = 0;
 #define GET_MANT(x)   (((x) & (1 << 22)) ? ((x) | ~MANT_MASK) : ((x) & MANT_MASK))
 
 // === Pack to decimal format ===
-static inline Decimal_32 encode_decimal(int sign, int sep, int32_t mant) {
-    mant &= MANT_MASK; // keep only 23 bits
-    return ((uint32_t)sign << 31) | ((Decimal_32)sep << 23) | mant;
+Decimal_32 encode_packed(int sign, int int_part, int frac_part, int int_bits, int frac_bits) {
+    Decimal_32 r = {0};
+    
+    // Normalize bit count
+    if (int_bits < 0) int_bits = 0;
+    if (frac_bits < 0) frac_bits = 0;
+    if ((int_bits + frac_bits) > 23) {
+        if (int_bits > 23) int_bits = 23;
+        frac_bits = 23 - int_bits;
+    }
+
+    r.sign = sign & 1;
+    r.layout = ((int_bits & 0xF) << 4) | (frac_bits & 0xF);
+
+    int shift_frac = 23 - frac_bits;
+    int shift_int  = shift_frac - int_bits;
+
+    r.mant = ((int_part  & ((1 << int_bits) - 1)) << shift_frac) |
+             ((frac_part & ((1 << frac_bits) - 1)) << shift_int);
+
+    return r;
 }
+
 
 // === Float to decimal ===
 static inline Decimal_32 decimal_from_float(float val) {
@@ -140,9 +161,17 @@ static inline Decimal_32 decimal_add(Decimal_32 a, Decimal_32 b) {
     int sa = GET_SIGN(a), sb = GET_SIGN(b);
     int ea = GET_SEP(a), eb = GET_SEP(b);
     int32_t ma = GET_MANT(a), mb = GET_MANT(b);
+    int32_t integer;
+    int32_t decimal;
+    int     index;
 
     if (sa) ma = -ma;
     if (sb) mb = -mb;
+
+    for (index = 0;index < ea;index++){
+
+    }
+
 
     int e = ea > eb ? eb : ea;
     if (ea > eb) mb >>= (ea - eb);
