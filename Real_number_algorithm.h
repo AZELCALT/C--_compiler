@@ -1,3 +1,5 @@
+
+
 typedef union __attribute__((packed))
 {
     struct {
@@ -51,8 +53,8 @@ _Static_assert(sizeof(Rational_64) == 8, "Rational_64 must be 64 bits");
 typedef union __attribute__((packed))
 {
     struct {
-        uint32_t number:         15;
-        uint32_t denominator:    16;
+        uint16_t number:         15;
+        uint16_t denominator:    16;
         uint8_t  sign:           1;   
     };
     uint32_t witdh;
@@ -88,19 +90,21 @@ static int decimal_overflow = 0;
 #define CLEAR_OVERFLOW() (decimal_overflow = 0)
 #define GET_OVERFLOW() (decimal_overflow)
 
+
+
 // === Extractors ===
 #define GET_SIGN(x)   (((x) >> 31) & 0x1)
 #define GET_SEP(x)    (((x) >> 23) & 0xFF)
-#define GET_MANT(x)   ((int32_t)((x & MANT_MASK) | ((x & (1 << 22)) ? 0xFF800000 : 0)))
+#define GET_MANT(x)   (((x) & (1 << 22)) ? ((x) | ~MANT_MASK) : ((x) & MANT_MASK))
 
 // === Pack to decimal format ===
-static inline uint32_t encode_decimal(int sign, int sep, int32_t mant) {
+static inline Decimal_32 encode_decimal(int sign, int sep, int32_t mant) {
     mant &= MANT_MASK; // keep only 23 bits
-    return ((uint32_t)sign << 31) | ((uint32_t)sep << 23) | mant;
+    return ((uint32_t)sign << 31) | ((Decimal_32)sep << 23) | mant;
 }
 
 // === Float to decimal ===
-static inline uint32_t decimal_from_float(float val) {
+static inline Decimal_32 decimal_from_float(float val) {
     int sign = (val < 0);
     float abs_val = fabsf(val);
 
@@ -123,7 +127,7 @@ static inline uint32_t decimal_from_float(float val) {
 }
 
 // === decimal to Float ===
-static inline float decimal_to_float(uint32_t fx) {
+static inline float decimal_to_float(Decimal_32 fx) {
     int sign = GET_SIGN(fx);
     int sep = GET_SEP(fx);
     int32_t mant = GET_MANT(fx);
@@ -132,7 +136,7 @@ static inline float decimal_to_float(uint32_t fx) {
 }
 
 // === ADDITION ===
-static inline uint32_t decimal_add(uint32_t a, uint32_t b) {
+static inline Decimal_32 decimal_add(Decimal_32 a, Decimal_32 b) {
     int sa = GET_SIGN(a), sb = GET_SIGN(b);
     int ea = GET_SEP(a), eb = GET_SEP(b);
     int32_t ma = GET_MANT(a), mb = GET_MANT(b);
@@ -159,17 +163,19 @@ static inline uint32_t decimal_add(uint32_t a, uint32_t b) {
         SET_OVERFLOW();
     }
 
+
+
     return encode_decimal(result_s, result_e, result_m);
 }
 
 // === SUBTRACTION ===
-static inline uint32_t decimal_sub(uint32_t a, uint32_t b) {
-    b ^= SIGN_MASK;
+static inline Decimal_32 decimal_sub(Decimal_32 a, Decimal_32 b) {
+    b.witdh ^= SIGN_MASK;
     return decimal_add(a, b);
 }
 
 // === MULTIPLICATION ===
-static inline uint32_t decimal_mul(uint32_t a, uint32_t b) {
+static inline Decimal_32 decimal_mul(Decimal_32 a, Decimal_32 b) {
     int sa = GET_SIGN(a), sb = GET_SIGN(b);
     int32_t ma = GET_MANT(a), mb = GET_MANT(b);
     int ea = GET_SEP(a), eb = GET_SEP(b);
@@ -197,7 +203,7 @@ static inline uint32_t decimal_mul(uint32_t a, uint32_t b) {
 }
 
 // === DIVISION ===
-static inline uint32_t decimal_div(uint32_t a, uint32_t b) {
+static inline Decimal_32 decimal_div(Decimal_32 a, Decimal_32 b) {
     int sa = GET_SIGN(a), sb = GET_SIGN(b);
     int32_t ma = GET_MANT(a), mb = GET_MANT(b);
     int ea = GET_SEP(a), eb = GET_SEP(b);
@@ -208,7 +214,7 @@ static inline uint32_t decimal_div(uint32_t a, uint32_t b) {
     if (sb) mb = -mb;
 
     int64_t numerator = ((int64_t)ma) << 22;
-    int64_t result_m = numerator / mb;
+    int64_t result_m = (numerator + (mb / 2)) / mb;
 
     int result_s = (result_m < 0);
     if (result_s) result_m = -result_m;
