@@ -161,28 +161,25 @@ static inline Decimal_32 decimal_add(Decimal_32 a, Decimal_32 b) {
     int sa = GET_SIGN(a), sb = GET_SIGN(b);
     int ea = GET_SEP(a), eb = GET_SEP(b);
     int32_t ma = GET_MANT(a), mb = GET_MANT(b);
-    int32_t integer;
-    int32_t decimal;
-    int     index;
 
     if (sa) ma = -ma;
     if (sb) mb = -mb;
 
-    for (index = 0;index < ea;index++){
-
+    // Align to same fractional bit depth
+    if (ea > eb) {
+        mb <<= (ea - eb);
+    } else if (eb > ea) {
+        ma <<= (eb - ea);
     }
-
-
-    int e = ea > eb ? eb : ea;
-    if (ea > eb) mb >>= (ea - eb);
-    else ma >>= (eb - ea);
 
     int32_t result_m = ma + mb;
     int result_s = (result_m < 0);
     if (result_s) result_m = -result_m;
 
-    int result_e = e;
-    while ((result_m > MAX_MANT) && (result_e < 255)) {
+    int result_e = ea > eb ? ea : eb;
+
+    // Normalize result if needed
+    while ((result_m > MAX_MANT) && result_e < 255) {
         result_m >>= 1;
         result_e++;
     }
@@ -191,8 +188,6 @@ static inline Decimal_32 decimal_add(Decimal_32 a, Decimal_32 b) {
         result_m = MAX_MANT;
         SET_OVERFLOW();
     }
-
-
 
     return encode_decimal(result_s, result_e, result_m);
 }
@@ -218,7 +213,7 @@ static inline Decimal_32 decimal_mul(Decimal_32 a, Decimal_32 b) {
 
     int result_e = ea + eb;
 
-    while ((result_m > MAX_MANT) && (result_e < 255)) {
+    while ((result_m > MAX_MANT) && result_e < 255) {
         result_m >>= 1;
         result_e++;
     }
@@ -237,20 +232,20 @@ static inline Decimal_32 decimal_div(Decimal_32 a, Decimal_32 b) {
     int32_t ma = GET_MANT(a), mb = GET_MANT(b);
     int ea = GET_SEP(a), eb = GET_SEP(b);
 
-    if (mb == 0) return 0;
+    if (mb == 0) return encode_decimal(0, 0, 0);  // Handle divide-by-zero
 
     if (sa) ma = -ma;
     if (sb) mb = -mb;
 
-    int64_t numerator = ((int64_t)ma) << 22;
-    int64_t result_m = (numerator + (mb / 2)) / mb;
+    int result_s = ((ma < 0) ^ (mb < 0));
+    int64_t numerator = ((int64_t)ma) << 23; // 23-bit shift to preserve fraction
+    int64_t result_m = numerator / mb;
 
-    int result_s = (result_m < 0);
-    if (result_s) result_m = -result_m;
+    if (result_m < 0) result_m = -result_m;
 
-    int result_e = ea - eb - 22;
+    int result_e = ea - eb;
 
-    while ((result_m > MAX_MANT) && (result_e < 255)) {
+    while ((result_m > MAX_MANT) && result_e < 255) {
         result_m >>= 1;
         result_e++;
     }
@@ -262,5 +257,3 @@ static inline Decimal_32 decimal_div(Decimal_32 a, Decimal_32 b) {
 
     return encode_decimal(result_s, result_e, (int32_t)result_m);
 }
-
-#endif // decimal_H
