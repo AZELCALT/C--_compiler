@@ -1,6 +1,6 @@
 #define LEXER_H
 
-#include <stdint.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> 
@@ -436,4 +436,4 @@ typedef struct {
 } LookupEntry;
 
 int identifier_counter;
-char Modulusment = '=' + '%'; // Modulusment character
+const char Modulusment = '=' + '%'; // Modulusment character

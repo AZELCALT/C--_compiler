@@ -1,4 +1,4 @@
-#include <Lookup_table.h>
+#include "Lookup_table.c"
 
 SystemToken get_default_system_token(char character[100]) {
     TypeArchitecture arch;
