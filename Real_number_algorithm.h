@@ -7,11 +7,11 @@
 typedef union __attribute__((packed))
 {
     struct {
-        uint32_t number: 23;
+        uint32_t number:  23;
         uint32_t  locator: 8;
         uint32_t  sign:    1;   
     };
-    uint32_t witdh;
+    uint32_t width;
 }Decimal_32;
 
 _Static_assert(sizeof(Decimal_32) == 4, "Decimal_32 must be 32 bits");
@@ -20,11 +20,11 @@ _Static_assert(sizeof(Decimal_32) == 4, "Decimal_32 must be 32 bits");
 typedef union __attribute__((packed))
 {
     struct {
-        uint64_t number: 55;
+        uint64_t number:  55;
         uint64_t  locator: 8;
         uint64_t  sign:    1;   
     };
-    uint64_t witdh;
+    uint64_t width;
 }Decimal_64;
 
 
@@ -34,11 +34,11 @@ _Static_assert(sizeof(Decimal_64) == 8, "Decimal_64 must be 64 bits");
 typedef union __attribute__((packed))
 {
     struct {
-        uint32_t number:         15;
+        uint32_t numberator:     15;
         uint32_t denominator:    16;
         uint32_t  sign:           1;   
     };
-    uint32_t witdh;
+    uint32_t width;
 }Rational_32;
 
 _Static_assert(sizeof(Rational_32) == 4, "Rational_32 must be 32 bits");
@@ -46,11 +46,11 @@ _Static_assert(sizeof(Rational_32) == 4, "Rational_32 must be 32 bits");
 typedef union __attribute__((packed))
 {
     struct {
-        uint64_t number:         31;  
+        uint64_t numberator:     31;  
         uint64_t denominator:    32;
-        uint64_t  sign:           1;   
+        uint64_t sign:           1;   
     };
-    uint64_t witdh;
+    uint64_t width;
 }Rational_64;
 
 _Static_assert(sizeof(Rational_64) == 8, "Rational_64 must be 64 bits");
@@ -58,11 +58,11 @@ _Static_assert(sizeof(Rational_64) == 8, "Rational_64 must be 64 bits");
 typedef union __attribute__((packed))
 {
     struct {
-        uint32_t number: 23;
+        uint32_t  number: 23;
         uint32_t  locator: 8;
         uint32_t  sign:    1;   
     };
-    uint32_t witdh;
+    uint32_t width;
 }Irrational_32;
 
 _Static_assert(sizeof(Irrational_32) == 4, "Irrational_32 must be 32 bits");
@@ -71,11 +71,11 @@ _Static_assert(sizeof(Irrational_32) == 4, "Irrational_32 must be 32 bits");
 typedef union __attribute__((packed))
 {
     struct {
-        uint64_t number: 55;
+        uint64_t  number: 55;
         uint64_t  locator: 8;
         uint64_t  sign:    1;   
     };
-    uint64_t witdh;
+    uint64_t width;
 }Irrational_64;
 
 
@@ -88,7 +88,7 @@ typedef union __attribute__((packed))
         uint32_t  radical_index: 8;
         uint32_t  sign:          1;   
     };
-    uint32_t witdh;
+    uint32_t width;
 }Root_32;
 
 _Static_assert(sizeof(Root_32) == 4, "Root_32 must be 32 bits");
@@ -101,7 +101,7 @@ typedef union __attribute__((packed))
         uint64_t  radical_index: 8;
         uint64_t  sign:          1;   
     };
-    uint64_t witdh;
+    uint64_t width;
 }Root_64;
 
 
@@ -110,10 +110,10 @@ _Static_assert(sizeof(Root_64) == 8, "Root_64 must be 64 bits");
 typedef union __attribute__((packed))
 {
     struct {
-        uint32_t   raw:           31;  
+        uint32_t  raw:            31;  
         uint32_t  sign:            1;    
     };
-    uint32_t witdh;
+    uint32_t width;
 }Fixed_32;
 
 _Static_assert(sizeof(Fixed_32) == 4, "Fixed_32 must be 32 bits");
@@ -121,10 +121,10 @@ _Static_assert(sizeof(Fixed_32) == 4, "Fixed_32 must be 32 bits");
 typedef union __attribute__((packed))
 {
     struct {
-        uint64_t integers:         63;  
+        uint64_t  raw:            63;  
         uint64_t  sign:            1;   
     };
-    uint64_t witdh;
+    uint64_t width;
 }Fixed_64;
 
 _Static_assert(sizeof(Fixed_64) == 8, "Fixed_64 must be 64 bits");
@@ -153,7 +153,7 @@ static int decimal_overflow = 0;
 // #define GET_INT(x)    (x >> (1U - (23 - x.locator)))
 // #define GET_FRAC(X)   (x >> (23 - x.locator)) & ((1U << x.locator) - 1)
 
-// === Pack to decimal format ===
+// === Pack format ===
 static inline int bit_length(uint32_t value) {
     int bits = 0;
     while (value) {
@@ -183,6 +183,67 @@ Decimal_32 pack_decimal_32(uint32_t fraction, uint32_t integers, uint8_t sign) {
     return packed;
 }
 
+Rational_32 pack_rational_32(uint32_t numberator, uint32_t denominator, uint32_t sign){
+    Rational_32 packed = {0};
+
+    int len1 = bit_lenght(numberator);
+    int len2 = bit_length(denominator);
+
+    if (len1 > 15 || len2 > 16) {
+        SET_OVERFLOW();
+        return packed;  // returning all zeros or leave to SET_OVERFLOW to handle
+    }
+
+    uint32_t packed_num = (numberator  << len1);
+    uint32_t packed_den = (denominator << len2);
+
+    packed.numberator  = packed_num;
+    packed.denominator = packed_den;
+    packed.sign        = sign;
+
+    return packedl;
+}
+
+Irrational_32 pack_irrational_32(uint32_t fraction, uint32_t integers, uint8_t sign) {
+    Irrational_32 packed = {0};  // Ensure all fields are zero-initialized
+
+    int len1 = bit_length(fraction);
+    int len2 = bit_length(integers);
+
+    if (len1 + len2 > 23) {
+        SET_OVERFLOW();
+        return packed;  // returning all zeros or leave to SET_OVERFLOW to handle
+    }
+
+    uint32_t combined = (integers << len2) | fraction;
+
+    packed.number  = combined;
+    packed.locator = len1;
+    packed.sign    = sign & 1;
+
+    return packed;
+}
+
+Root_32 pack_root_32(uint32_t number, uint32_t radical_index, uint8_t sign){
+    Root_32 packed = {0};
+
+    int len1 = bit_lenght(number);
+    int len2 = bit_length(radical_index);
+
+    if (len1 > 15 || len2 > 16) {
+        SET_OVERFLOW();
+        return packed;  // returning all zeros or leave to SET_OVERFLOW to handle
+    }
+
+    uint32_t packed_num = (numberator  << len1);
+    uint32_t packed_rac = (denominator << len2);
+
+    packed.number        = packed_num;
+    packed.radical_index = packed_rac;
+    packed.sign          = sign;
+
+    return packedl;
+}
 
 // === Float to decimal ===
 // static inline Decimal_32 decimal_from_float(float val) {
@@ -209,9 +270,9 @@ Decimal_32 pack_decimal_32(uint32_t fraction, uint32_t integers, uint8_t sign) {
 
 // === decimal to Float ===
 // static inline float decimal_to_float(Decimal_32 fx) {
-//     int sign = GET_SIGN(fx.witdh);
-//     int sep = GET_SEP(fx.witdh);
-//     int32_t mant = GET_MANT(fx.witdh);
+//     int sign = GET_SIGN(fx.width);
+//     int sep = GET_SEP(fx.width);
+//     int32_t mant = GET_MANT(fx.width);
 //     float value = (float)mant / (1 << sep);
 //     return sign ? -value : value;
 // }
@@ -275,15 +336,15 @@ static inline Decimal_32 decimal_add(Decimal_32 a, Decimal_32 b) {
 
 // === SUBTRACTION ===
 static inline Decimal_32 decimal_sub(Decimal_32 a, Decimal_32 b) {
-    b.witdh ^= SIGN_MASK;
+    b.width ^= SIGN_MASK;
     return decimal_add(a, b);
 }
 
 // === MULTIPLICATION ===
 static inline Decimal_32 decimal_mul(Decimal_32 a, Decimal_32 b) {
-    int sa = GET_SIGN(a.witdh), sb = GET_SIGN(b.witdh);
-    int32_t ma = GET_MANT(a.witdh), mb = GET_MANT(b.witdh);
-    int ea = GET_SEP(a.witdh), eb = GET_SEP(b.witdh);
+    int sa = GET_SIGN(a.width), sb = GET_SIGN(b.width);
+    int32_t ma = GET_MANT(a.width), mb = GET_MANT(b.width);
+    int ea = GET_SEP(a.width), eb = GET_SEP(b.width);
 
     if (sa) ma = -ma;
     if (sb) mb = -mb;
@@ -309,9 +370,9 @@ static inline Decimal_32 decimal_mul(Decimal_32 a, Decimal_32 b) {
 
 // === DIVISION ===
 static inline Decimal_32 decimal_div(Decimal_32 a, Decimal_32 b) {
-    int sa = GET_SIGN(a.witdh), sb = GET_SIGN(b.witdh);
-    int32_t ma = GET_MANT(a.witdh), mb = GET_MANT(b.witdh);
-    int ea = GET_SEP(a.witdh), eb = GET_SEP(b.witdh);
+    int sa = GET_SIGN(a.width), sb = GET_SIGN(b.width);
+    int32_t ma = GET_MANT(a.width), mb = GET_MANT(b.width);
+    int ea = GET_SEP(a.width), eb = GET_SEP(b.width);
 
     if (mb == 0) return pack_decimal_32(0, 0, 0);  // Handle divide-by-zero
 
