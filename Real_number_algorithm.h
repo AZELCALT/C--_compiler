@@ -302,7 +302,7 @@ static inline Decimal_32 decimal_add(Decimal_32 a, Decimal_32 b) {
     int fraction_b = (b >> (23 - b.locator)) & ((1U << b.locator) - 1);
     int integer_b = (a >> (1U - (23 - a.locator)));
 
-
+    
 
     // if (sa) ma = -ma;
     // if (sb) mb = -mb;
