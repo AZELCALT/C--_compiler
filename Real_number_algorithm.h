@@ -1191,3 +1191,4 @@ static inline Root_32 root_mul_and_div(Root_32 a, Root_32 b, bool mul_or_div) {
     c.sign = sign_result;   
     return c;
 }
+
