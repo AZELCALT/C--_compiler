@@ -84,9 +84,10 @@ _Static_assert(sizeof(Irrational_64) == 8, "Irrational_64 must be 64 bits");
 typedef union __attribute__((packed))
 {
     struct {
-        uint32_t  number:       23;
-        uint32_t  radicand:      8;
-        uint32_t  sign:          1;   
+        uint32_t  number_under_root:       11;
+        uint32_t  number_outside_root:     12;
+        uint32_t  radicand:                 8;
+        uint32_t  sign:                     1;   
     };
     uint32_t width;
 }Root_32;
@@ -97,9 +98,10 @@ _Static_assert(sizeof(Root_32) == 4, "Root_32 must be 32 bits");
 typedef union __attribute__((packed))
 {
     struct {
-        uint64_t  number:       55;
-        uint64_t  radicand: 8;
-        uint64_t  sign:          1;   
+        uint64_t  number_under_root:       27;
+        uint64_t  number_outside_root:     28;
+        uint64_t  radicand:                 8;
+        uint64_t  sign:                     1;   
     };
     uint64_t width;
 }Root_64;
@@ -998,7 +1000,7 @@ static inline Decimal_32 decimal_rational_mul_and_div(Rational_32 b, Decimal_32 
     int locator_a = a.locator;
     int len_a = bit_length(fraction_a);
     int base_depth_a = locator_a - len_a;
-    int base_normalize_limit = base * (base_depth_b + 1);
+    int base_normalize_limit = base * (base_depth_a + 1);
     int number_b = integer_a * base_normalize_limit + fraction_a;
     int result_denominator;
     int result_numerator;   
@@ -1038,4 +1040,154 @@ static inline Decimal_32 decimal_rational_mul_and_div_default(Rational_32 a, Dec
     return rational_decimal_mul_and_div(a, b, mul_or_div, 10);
 }
 
+// === Root ===
+uint32_t int_sqrt(uint32_t n) { 
+    uint32_t low = 0, high = n, mid; 
+    while (low <= high) { 
+        mid = (low + high) / 2; 
+        uint32_t sq = mid * mid; 
+        if (sq == n) return mid; 
+        if (sq < n) low = mid + 1; 
+        else high = mid - 1; 
+    } 
+    return high;  // best integer approximation 
+} 
 
+static inline Root_32 root_add_and_sub(Root_32 a, Root_32 b, bool add_or_sub) {
+    Root_32 c = {0};    
+    int sign_a = GET_SIGN(a);
+    int sign_b = GET_SIGN(b);
+    int Root_number_a = a.number_under_root;
+    int Root_number_b = b.number_under_root;
+    int outside_root_a = a.number_outside_root;
+    int outside_root_b = b.number_outside_root;
+    int radicand_a = a.radicand;
+    int radicand_b = b.radicand;
+    int sign_result;
+    if (sign_a == 1) {
+        outside_root_a = -outside_root_a;
+    }
+    if (sign_b == 1) {
+       outside_root_b = -outside_root_b;
+    }
+
+    if (Root_number_a != Root_number_b || radicand_a != radicand_b) {
+        SET_OVERFLOW();
+        return c;  // returning all zeros or leave to SET_OVERFLOW to handle
+    }
+
+    if (add_or_sub == false) {
+        Root_number_a += Root_number_b;
+        outside_root_a += outside_root_b;
+        if (Root_number_a > 32767 || outside_root_a > 65536) {
+            SET_OVERFLOW();
+            return c;  // returning all zeros or leave to SET_OVERFLOW to handle
+        }
+        sign_result = (Root_number_a < 0 || outside_root_a < 0) ? 1 : 0;
+    } else {
+        Root_number_a -= Root_number_b;
+        outside_root_a -= outside_root_b;
+        if (Root_number_a < -32768 || outside_root_a < -65536) {
+            SET_OVERFLOW();
+            return c;  // returning all zeros or leave to SET_OVERFLOW to handle
+        }
+        sign_result = (Root_number_a < 0 || outside_root_a < 0) ? 1 : 0;
+    }
+    int Root_number_result = Root_number_a + Root_number_b;
+    int outside_root_result = outside_root_a + outside_root_b;
+    if (sign_a == 1) {
+        outside_root_result = -outside_root_result;
+    }
+    if (sign_b == 1) {
+        outside_root_result = -outside_root_result;
+    }
+
+    if (outside_root_result < 0) {
+        outside_root_result = -outside_root_result;
+        sign_result = 1;
+    } else {
+        sign_result = 0;
+    }
+
+    if (outside_root_result > 65536 || Root_number_result > 32767) {
+        SET_OVERFLOW();
+        return c;  // returning all zeros or leave to SET_OVERFLOW to handle
+    }
+    c.number_under_root = Root_number_result;
+    c.number_outside_root = outside_root_result;
+    c.radicand = radicand_a;  // assuming radicand is the same for both roots
+    c.sign = sign_result;
+    return c;
+}
+
+static inline Root_32 root_mul_and_div(Root_32 a, Root_32 b, bool mul_or_div) {
+    Root_32 c = {0};    
+    int sign_a = GET_SIGN(a);
+    int sign_b = GET_SIGN(b);
+    int Root_number_a = a.number_under_root;
+    int Root_number_b = b.number_under_root;
+    int outside_root_a = a.number_outside_root;
+    int outside_root_b = b.number_outside_root;
+    int radicand_a = a.radicand;
+    int radicand_b = b.radicand;
+    int sign_result;
+
+    if (sign_a == 1) {
+        outside_root_a = -outside_root_a;
+    }
+    if (sign_b == 1) {
+       outside_root_b = -outside_root_b;
+    }
+
+    if (radicand_a != radicand_b) {
+        SET_OVERFLOW();
+        return c;  // returning all zeros or leave to SET_OVERFLOW to handle
+    }
+
+    if (mul_or_div == false) {
+        Root_number_a *= Root_number_b;
+        outside_root_a *= outside_root_b;
+        if (Root_number_a > 32767 || outside_root_a > 65536) {
+            SET_OVERFLOW();
+            return c;  // returning all zeros or leave to SET_OVERFLOW to handle
+        }
+        sign_result = (Root_number_a < 0 || outside_root_a < 0) ? 1 : 0;
+    } else {
+        if (Root_number_b == 0 || outside_root_b == 0) {
+            SET_OVERFLOW();
+            return c;  // division by zero
+        }
+        Root_number_a /= Root_number_b;
+        outside_root_a /= outside_root_b;
+        if (Root_number_a < -32768 || outside_root_a < -65536) {
+            SET_OVERFLOW();
+            return c;  // returning all zeros or leave to SET_OVERFLOW to handle
+        }
+        sign_result = (Root_number_a < 0 || outside_root_a < 0) ? 1 : 0;
+    }
+    
+    int Root_number_result = Root_number_a + Root_number_b;
+    int outside_root_result = outside_root_a + outside_root_b;
+
+    if (sign_a == 1) {
+        outside_root_result = -outside_root_result;
+    }
+    if (sign_b == 1) {
+        outside_root_result = -outside_root_result;
+    }
+    if (outside_root_result < 0) {
+        outside_root_result = -outside_root_result;
+        sign_result = 1;
+    } else {
+        sign_result = 0;
+    }
+    if (outside_root_result > 65536 || Root_number_result > 32767) {
+        SET_OVERFLOW();
+        return c;  // returning all zeros or leave to SET_OVERFLOW to handle
+    }
+    c.number_under_root = Root_number_result;
+    c.number_outside_root = outside_root_result;
+    c.radicand = radicand_a;  // assuming radicand is the same for both roots
+    c.sign = sign_result;   
+    return c;
+}
