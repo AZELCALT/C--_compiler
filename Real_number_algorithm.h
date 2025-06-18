@@ -858,6 +858,68 @@ static inline Rational_32 rational_mul_and_div(Rational_32 a, Rational_32 b, boo
     return c;
 }
 
+static inline Decimal_32 rational_decimal_add_and_sub(Rational_32 a, Decimal_32 b, bool add_or_sub, int base) {
+    Decimal_32 c = {0}; 
 
+    int sign_a = GET_SIGN(a);
+    int sign_b = GET_SIGN(b);
+
+    int numerator_a = a.numerator;
+    if (sign_a == 1) {
+        numerator_a = -numerator_a;
+    }
+    int denominator_a = a.denominator;
+    int fraction_b = (b.width >> (23 - b.locator)) & ((1U << b.locator) - 1);
+    int integer_b = (b.width >> (1U - (23 - b.locator)));
+
+
+    int locator_b = b.locator;
+    int len_b = bit_length(fraction_b);
+    int base_depth_b= locator_b - len_b;
+    int base_normalize_limit = base * (base_depth_b + 1);
+    int number_b = integer_b * base_normalize_limit + fraction_b;
+    int normalize_denominator;
+    int result_numerator;
+
+    if (denominator_a != 1 ) {
+        normalize_denominator = denominator_a;
+    } else {
+        normalize_denominator = 1;
+    }
+    if (add_or_sub == false) {
+        result_numerator = numerator_a + number_b;
+    } else {
+        result_numerator = numerator_a - number_b;
+    }
+    
+    int result_denominator = normalize_denominator;
+    int sign_result;
+    if (result_numerator > 0) {
+        sign_result = 0;
+    } else {
+        sign_result = 1;
+        result_numerator = -result_numerator;   
+    }
+
+    if (result_numerator > 32767 || result_denominator > 65536) {
+        SET_OVERFLOW();
+        return c;  // returning all zeros or leave to SET_OVERFLOW to handle
+    }
+
+    int normalized_numerator_frac = result_numerator % result_denominator;
+    int normalized_numerator_int = result_numerator / result_denominator;
+    int normalized_int = normalized_numerator_int/ base_normalize_limit;
+    int leftover_frac = normalized_numerator_int % base_normalize_limit;
+    int normalized_frac = normalized_numerator_frac + leftover_frac;
+    int fragtion_less_than_limit;
+
+    int padding;
+    if (normalized_frac > 0){
+        fragtion_less_than_limit = base_normalize_limit/normalized_frac;
+        padding = fragtion_less_than_limit/base;
+    }
+    
+    return pack_decimal_32(normalized_frac, normalized_int, sign_result, padding);
+}
 
 
