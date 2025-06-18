@@ -659,12 +659,12 @@ static inline Irrational_32 irrational_decimal_add_and_sub(Irrational_32 a, Deci
     return pack_decimal_32(fraction_result, integer_result, sign_result, padding)
 }
 
-static inline Decimal_32 decimal_add_and_sub_default(Decimal_32 a, Decimal_32 b, bool add_or_sub) {
+static inline Decimal_32 irrational_decimal_add_and_sub_default(Decimal_32 a, Decimal_32 b, bool add_or_sub) {
     return decimal_add_and_sub(a,b,10,add_or_sub)
 }
 
 // === MULTIPLICATION ===
-static inline Decimal_32 decimal_mul_and_div(Decimal_32 a, Decimal_32 b, int base, bool mul_or_div) {
+static inline Decimal_32 irrational_decimal_mul_and_div(Decimal_32 a, Decimal_32 b, int base, bool mul_or_div) {
     Decimal_32 c = {0}; 
 
     int sign_a = GET_SIGN(a);
@@ -749,6 +749,9 @@ static inline Decimal_32 decimal_mul_and_div(Decimal_32 a, Decimal_32 b, int bas
     return pack_decimal_32(fraction_result, integer_result, sign_result, padding)
 }
 
-static inline Decimal_32 decimal_mul_and_div_default(Decimal_32 a, Decimal_32 b, bool mul_or_div) {
+static inline Decimal_32 irrational_decimal_mul_and_div_default(Decimal_32 a, Decimal_32 b, bool mul_or_div) {
     return decimal_mul_and_div(a,b,10,mul_or_div)
 }
+
+
+
