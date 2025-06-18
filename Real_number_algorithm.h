@@ -922,4 +922,120 @@ static inline Decimal_32 rational_decimal_add_and_sub(Rational_32 a, Decimal_32 
     return pack_decimal_32(normalized_frac, normalized_int, sign_result, padding);
 }
 
+static inline Decimal_32 rational_decimal_add_and_sub_default(Rational_32 a, Decimal_32 b, bool add_or_sub) {
+    return rational_decimal_add_and_sub(a, b, add_or_sub, 10);
+}
+
+static inline Decimal_32 rational_decimal_mul_and_div(Rational_32 a, Decimal_32 b, bool mul_or_div, int base) {
+    Decimal_32 c = {0}; 
+
+    int sign_a = GET_SIGN(a);
+    int sign_b = GET_SIGN(b);
+
+    int numerator_a = a.numerator;
+    if (sign_a == 1) {
+        numerator_a = -numerator_a;
+    }
+    int denominator_a = a.denominator;
+    int fraction_b = (b.width >> (23 - b.locator)) & ((1U << b.locator) - 1);
+    int integer_b = (b.width >> (1U - (23 - b.locator)));
+    int locator_b = b.locator;
+    int len_b = bit_length(fraction_b);
+    int base_depth_b= locator_b - len_b;
+    int base_normalize_limit = base * (base_depth_b + 1);
+    int number_b = integer_b * base_normalize_limit + fraction_b;
+    int result_denominator;
+    int result_numerator;   
+    if (mul_or_div == false) {
+        result_numerator = numerator_a * number_b;
+        result_denominator = denominator_a * 1; // denominator of decimal is always 1
+    } else {
+        result_numerator = numerator_a * 1; // numerator of decimal is always 1
+        result_denominator = denominator_a * number_b;
+    }
+    int sign_result;
+    if (result_numerator > 0) {
+        sign_result = 0;
+    } else {
+        sign_result = 1;
+        result_numerator = -result_numerator;   
+    }
+    if (result_numerator > 32767 || result_denominator > 65536) {
+        SET_OVERFLOW();
+        return c;  // returning all zeros or leave to SET_OVERFLOW to handle
+    }   
+    int normalized_numerator_frac = result_numerator % result_denominator;
+    int normalized_numerator_int = result_numerator / result_denominator;
+    int normalized_int = normalized_numerator_int/ base_normalize_limit;
+    int leftover_frac = normalized_numerator_int % base_normalize_limit;
+    int normalized_frac = normalized_numerator_frac + leftover_frac;
+    int fragtion_less_than_limit;   
+    int padding;
+    if (normalized_frac > 0){
+        fragtion_less_than_limit = base_normalize_limit/normalized_frac;
+        padding = fragtion_less_than_limit/base;
+    }
+    return pack_decimal_32(normalized_frac, normalized_int, sign_result, padding);
+}
+
+static inline Decimal_32 rational_decimal_mul_and_div_default(Rational_32 a, Decimal_32 b, bool mul_or_div) {
+    return rational_decimal_mul_and_div(a, b, mul_or_div, 10);
+}
+
+static inline Decimal_32 rational_decimal_mul_and_div(Rational_32 b, Decimal_32 a, bool mul_or_div, int base) {
+    Decimal_32 c = {0}; 
+
+    int sign_a = GET_SIGN(a);
+    int sign_b = GET_SIGN(b);
+
+    int numerator_a = a.numerator;
+    if (sign_a == 1) {
+        numerator_a = -numerator_a;
+    }
+    int denominator_a = a.denominator;
+    int fraction_a = (a.width >> (23 - a.locator)) & ((1U << a.locator) - 1);
+    int integer_a = (a.width >> (1U - (23 - a.locator)));
+    int locator_a = a.locator;
+    int len_a = bit_length(fraction_a);
+    int base_depth_a = locator_a - len_a;
+    int base_normalize_limit = base * (base_depth_b + 1);
+    int number_b = integer_a * base_normalize_limit + fraction_a;
+    int result_denominator;
+    int result_numerator;   
+    if (mul_or_div == false) {
+        result_numerator = numerator_a * number_b;
+        result_denominator = denominator_a * 1; // denominator of decimal is always 1
+    } else {
+        result_numerator = denominator_a * number_b; // decimal first so it flips rational
+        result_denominator =  numerator_a * 1;
+    }
+    int sign_result;
+    if (result_numerator > 0) {
+        sign_result = 0;
+    } else {
+        sign_result = 1;
+        result_numerator = -result_numerator;   
+    }
+    if (result_numerator > 32767 || result_denominator > 65536) {
+        SET_OVERFLOW();
+        return c;  // returning all zeros or leave to SET_OVERFLOW to handle
+    }   
+    int normalized_numerator_frac = result_numerator % result_denominator;
+    int normalized_numerator_int = result_numerator / result_denominator;
+    int normalized_int = normalized_numerator_int/ base_normalize_limit;
+    int leftover_frac = normalized_numerator_int % base_normalize_limit;
+    int normalized_frac = normalized_numerator_frac + leftover_frac;
+    int fragtion_less_than_limit;   
+    int padding;
+    if (normalized_frac > 0){
+        fragtion_less_than_limit = base_normalize_limit/normalized_frac;
+        padding = fragtion_less_than_limit/base;
+    }
+    return pack_decimal_32(normalized_frac, normalized_int, sign_result, padding);
+}
+
+static inline Decimal_32 rational_decimal_mul_and_div_default(Rational_32 a, Decimal_32 b, bool mul_or_div) {
+    return rational_decimal_mul_and_div(a, b, mul_or_div, 10);
+}
+
 
