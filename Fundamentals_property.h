@@ -364,7 +364,6 @@ typedef struct {
 
 typedef struct {
     SystemType  System; // System type too accept or reject base on what is currently doing
-    TypeLiteral Literal; // System value type it can hold
     bool allowed_8bit;   // permission to using
     bool allowed_16bit;
     bool allowed_32bit;

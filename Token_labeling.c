@@ -1,4 +1,4 @@
-#include "system_information_gather.c"
+#include "Lookup_table.h"
 
 Token get_normal_token(int column,int line,char character[100]){
     
