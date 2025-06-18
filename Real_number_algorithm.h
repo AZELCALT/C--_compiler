@@ -982,7 +982,7 @@ static inline Decimal_32 rational_decimal_mul_and_div_default(Rational_32 a, Dec
     return rational_decimal_mul_and_div(a, b, mul_or_div, 10);
 }
 
-static inline Decimal_32 rational_decimal_mul_and_div(Rational_32 b, Decimal_32 a, bool mul_or_div, int base) {
+static inline Decimal_32 decimal_rational_mul_and_div(Rational_32 b, Decimal_32 a, bool mul_or_div, int base) {
     Decimal_32 c = {0}; 
 
     int sign_a = GET_SIGN(a);
@@ -1034,7 +1034,7 @@ static inline Decimal_32 rational_decimal_mul_and_div(Rational_32 b, Decimal_32 
     return pack_decimal_32(normalized_frac, normalized_int, sign_result, padding);
 }
 
-static inline Decimal_32 rational_decimal_mul_and_div_default(Rational_32 a, Decimal_32 b, bool mul_or_div) {
+static inline Decimal_32 decimal_rational_mul_and_div_default(Rational_32 a, Decimal_32 b, bool mul_or_div) {
     return rational_decimal_mul_and_div(a, b, mul_or_div, 10);
 }
 
