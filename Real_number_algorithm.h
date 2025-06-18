@@ -1192,3 +1192,27 @@ static inline Root_32 root_mul_and_div(Root_32 a, Root_32 b, bool mul_or_div) {
     return c;
 }
 
+static inline Decimal_32 root_cast_to_decimal(Root_32 a) {
+    Decimal_32 c = {0};    
+
+    Root_32 d = a;  // Copy the root to work with
+    int sign_a = GET_SIGN(a);
+    if (sign_a == 1) {
+        d.number_outside_root = -d.number_outside_root;
+    }
+
+    uint32_t cast_catch = int_sqrt(d.number_under_root);
+
+    int sign_cast = GET_SIGN(cast_catch);
+
+    if (outside_root_a > 65536 || Root_number_a > 32767) {
+        SET_OVERFLOW();
+        return c;  // returning all zeros or leave to SET_OVERFLOW to handle
+    }
+    
+    c.width = (Root_number_a << 16) | (outside_root_a & 0xFFFF);
+    c.locator = bit_length(outside_root_a);
+    c.sign = sign_a;
+
+    return c;
+}
