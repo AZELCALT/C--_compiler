@@ -1244,17 +1244,16 @@ static inline Irrational_32 root_cast_to_decimal(Root_32 a,int base) {
     
     // if (sign_a == 1) {
     //     d.number_outside_root = -d.number_outside_root;
-    // }
+    // }--
     SqrtResult sqrt_result = int_root(d.number_outside_root, d.radicand);
     uint32_t first_int = sqrt_result.first_int;
     uint32_t remainder = sqrt_result.remainder;
     uint32_t scale = sqrt_result.scale;
     uint32_t Normalize_base = base * scale;
-    uint32_t Normalize_int = first_int / Normalize_base;
-    uint32_t Normalize_fraction = first_int % Normalize_base;
+    uint32_t Main_number = first_int * Number_outside_root_a;
+    uint32_t Normalize_int = Main_number / Normalize_base;
+    uint32_t Normalize_fraction = Main_number % Normalize_base;
 
-
-    int ;
     
 
     if (outside_root_a > 65536 || Root_number_a > 32767) {
@@ -1262,9 +1261,7 @@ static inline Irrational_32 root_cast_to_decimal(Root_32 a,int base) {
         return c;  // returning all zeros or leave to SET_OVERFLOW to handle
     }
     
-    c.width =
-    c.locator = 
-    c.sign = sign_a;
 
-    return c;
+
+    return pack_irrational_32(Normalize_fraction, Normalize_int, sign_a, base);
 }
