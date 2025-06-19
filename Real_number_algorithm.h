@@ -3,6 +3,7 @@
 #endif
 
 #include <stdint.h>
+#include <limits.h>
 
 typedef union __attribute__((packed))
 {
@@ -1041,17 +1042,58 @@ static inline Decimal_32 decimal_rational_mul_and_div_default(Rational_32 a, Dec
 }
 
 // === Root ===
-uint32_t int_sqrt(uint32_t n) { 
-    uint32_t low = 0, high = n, mid; 
-    while (low <= high) { 
-        mid = (low + high) / 2; 
-        uint32_t sq = mid * mid; 
-        if (sq == n) return mid; 
-        if (sq < n) low = mid + 1; 
-        else high = mid - 1; 
-    } 
-    return high;  // best integer approximation 
-} 
+typedef struct {
+    uint64_t first_int;      // Integer part of sqrt(y)
+    uint64_t remainder; // What's left: y - z^n
+    uint64_t scale; // Scale factor for normalization
+} SqrtResult;
+
+typedef struct {
+    uint32_t normalize;
+    uint32_t scale;
+} normalize_result;
+
+static inline normalize_result normalization_for_root(uint32_t Number) {
+    // Normalize the number for root calculation
+    normalize_result result = {.normalize = Number, .scale = 0};
+    while ((result.normalize <= (UINT32_MAX  / 10 ))) {
+        result.normalize *= 10;
+        result.scale++;
+    }
+    return result;
+}
+
+// Generalized root evaluator
+SqrtResult int_root(uint32_t Number, uint32_t radix) {
+    if (Number == 0) return (SqrtResult){.first_int = 0, .remainder = 0, .scale=0}; // Special case for zero
+    if (radix == 0 || radix == 1) return (SqrtResult){.first_int = Number, .remainder = 0, .scale=0}; // Special case for radix 0 or 1
+    if (Number == 1) return (SqrtResult){.first_int = 1, .remainder = 0, .scale=0}; // Special case for one
+    normalize_result normalization = normalization_for_root(Number);
+    uint64_t Normalize = normalization.normalize;
+    uint64_t scale = normalization.scale;
+    uint32_t low = 0, high = Normalize, mid;
+    SqrtResult finalize_result = {0, 0};
+    while (low <= high) {
+        mid = (low + high) / 2;
+
+        // Compute mid^n safely
+        uint64_t result = 1;
+        for (uint32_t i = 0; i < radix; ++i) {
+            result *= mid;
+            if (result > Normalize) break;
+        }
+
+        if (result == Normalize) return (SqrtResult){.first_int = mid, .remainder = 0}; // Found exact root
+        if (result < Normalize) low = mid + 1;
+        else high = mid - 1;
+    }
+    int index;
+    uint64_t remainder = Normalize - high^radix; // What's left after subtracting the largest perfect power of radix
+    finalize_result.first_int = high;
+    finalize_result.remainder = remainder;
+    finalize_result.scale = scale; // Store the scale factor for normalization
+    return finalize_result; // max z where z^n ≤ y
+}
 
 static inline Root_32 root_add_and_sub(Root_32 a, Root_32 b, bool add_or_sub) {
     Root_32 c = {0};    
@@ -1192,26 +1234,31 @@ static inline Root_32 root_mul_and_div(Root_32 a, Root_32 b, bool mul_or_div) {
     return c;
 }
 
-static inline Decimal_32 root_cast_to_decimal(Root_32 a) {
+static inline Decimal_32 root_cast_to_decimal(Root_32 a,int base) {
     Decimal_32 c = {0};    
 
     Root_32 d = a;  // Copy the root to work with
     int sign_a = GET_SIGN(a);
-    if (sign_a == 1) {
-        d.number_outside_root = -d.number_outside_root;
-    }
+    int Number_outside_root_a = a.number_outside_root;
+    
+    
+    // if (sign_a == 1) {
+    //     d.number_outside_root = -d.number_outside_root;
+    // }
 
-    uint32_t cast_catch = int_sqrt(d.number_under_root);
+    uint32_t cast_catch_int = int_root(d.number_under_root).first_int;
+    uint32_t cast_catch_rem = int_root(d.number_under_root).remainder;
 
-    int sign_cast = GET_SIGN(cast_catch);
+    int ;
+    
 
     if (outside_root_a > 65536 || Root_number_a > 32767) {
         SET_OVERFLOW();
         return c;  // returning all zeros or leave to SET_OVERFLOW to handle
     }
     
-    c.width = (Root_number_a << 16) | (outside_root_a & 0xFFFF);
-    c.locator = bit_length(outside_root_a);
+    c.width =
+    c.locator = 
     c.sign = sign_a;
 
     return c;
