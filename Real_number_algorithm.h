@@ -1053,11 +1053,11 @@ typedef struct {
     uint32_t scale;
 } normalize_result;
 
-static inline normalize_result normalization_for_root(uint32_t Number) {
+static inline normalize_result normalization_for_root(uint32_t Number, uint32_t base) {
     // Normalize the number for root calculation
     normalize_result result = {.normalize = Number, .scale = 0};
-    while ((result.normalize <= (UINT32_MAX  / 10 ))) {
-        result.normalize *= 10;
+    while ((result.normalize <= (UINT32_MAX  / base ))) {
+        result.normalize *= base;
         result.scale++;
     }
     return result;
@@ -1234,8 +1234,8 @@ static inline Root_32 root_mul_and_div(Root_32 a, Root_32 b, bool mul_or_div) {
     return c;
 }
 
-static inline Decimal_32 root_cast_to_decimal(Root_32 a,int base) {
-    Decimal_32 c = {0};    
+static inline Irrational_32 root_cast_to_decimal(Root_32 a,int base) {
+    Irrational_32 c = {0};    
 
     Root_32 d = a;  // Copy the root to work with
     int sign_a = GET_SIGN(a);
@@ -1245,9 +1245,14 @@ static inline Decimal_32 root_cast_to_decimal(Root_32 a,int base) {
     // if (sign_a == 1) {
     //     d.number_outside_root = -d.number_outside_root;
     // }
+    SqrtResult sqrt_result = int_root(d.number_outside_root, d.radicand);
+    uint32_t first_int = sqrt_result.first_int;
+    uint32_t remainder = sqrt_result.remainder;
+    uint32_t scale = sqrt_result.scale;
+    uint32_t Normalize_base = base * scale;
+    uint32_t Normalize_int = first_int / Normalize_base;
+    uint32_t Normalize_fraction = first_int % Normalize_base;
 
-    uint32_t cast_catch_int = int_root(d.number_under_root).first_int;
-    uint32_t cast_catch_rem = int_root(d.number_under_root).remainder;
 
     int ;
     
