@@ -1,6 +1,6 @@
-#ifdef fix_negative_zero
-    if (mant == 0) sign = 0;
-#endif
+// #ifdef fix_negative_zero
+//     if (mant == 0) sign = 0;
+// #endif
 
 #include <stdint.h>
 #include <limits.h>
