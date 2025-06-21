@@ -774,6 +774,7 @@ static inline Rational_32 rational_add_and_sub(Rational_32 a, Rational_32 b, boo
     }
     int denominator_b = b.denominator;
     int normalize_denominator;
+    int result_numerator;
 
     if (denominator_a != denominator_b ) {
         normalize_denominator = denominator_a * denominator_b;
